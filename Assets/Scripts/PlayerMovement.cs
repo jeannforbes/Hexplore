@@ -7,6 +7,28 @@ public class PlayerMovement : MonoBehaviour {
 	public float speed = 0.25f;
 	public int jumpStrength = 20;
 	private int jumpTimer = 20;
+    private float health = 100;
+    private int score = 0;
+
+    //properties
+
+    //gets the player's health
+    public float Health
+    {
+        get
+        {
+            return health;
+        }
+    }
+
+    //gets the player's score
+    public int Score
+    {
+        get
+        {
+            return score;
+        }
+    }
 
 	// Use this for initialization
 	void Start () {
