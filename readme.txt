@@ -1,1 +1,0 @@
-Hexplorer - a game about hexes, exploration, and a little bit of mud.
