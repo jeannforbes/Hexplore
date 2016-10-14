@@ -14,9 +14,10 @@ public class PlayerMovement : MonoBehaviour {
 
     /////////////////// Private Values ///////////////////
     //ability to jump is now controlled by a bool value.
-    private bool canJump = true;
-    private float maxHealth = 10;
-    private float health;
+    private bool onJumpableSurface = true;
+    private bool jumpReady = true;
+   // private float maxHealth = 10;
+    //private float health;
     private int score = 0;
 
     private Rigidbody rBody;
@@ -48,7 +49,7 @@ public class PlayerMovement : MonoBehaviour {
     // Use this for initialization
     void Start () {
         rBody = (Rigidbody)this.GetComponent("Rigidbody");
-        health = maxHealth;
+        //health = maxHealth;
 		originalColor = GetComponent<Renderer>().material.color;
 	}
 	
@@ -70,9 +71,17 @@ public class PlayerMovement : MonoBehaviour {
 
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
             rBody.AddForce(new Vector3(slideForce, 0, 0) * Time.deltaTime);
-        if (Input.GetKey(KeyCode.Space) && canJump)
+
+        bool spacePressed = Input.GetKey(KeyCode.Space);
+        if (spacePressed && onJumpableSurface && jumpReady)
         {
-            rBody.AddForce(Vector3.up * jumpStrength * Time.deltaTime);
+            rBody.AddForce(Vector3.up * jumpStrength /** Time.deltaTime*/);
+            jumpReady = false;
+        }
+        if (!spacePressed && !jumpReady)
+        {
+            //print("Jump ready!");
+            jumpReady = true;
         }
         
 
@@ -102,17 +111,17 @@ public class PlayerMovement : MonoBehaviour {
         rBody.velocity = Vector3.ClampMagnitude(rBody.velocity, maxSpeed);
 
 		//Check if the player is still alive & reset if they aren't
-		if (this.transform.position.y < -15 || health <= 0) {
+		if (this.transform.position.y < -15 /*|| health <= 0*/) {
 			this.transform.position = new Vector3(0,10,0);
 			this.transform.rotation = Quaternion.identity;
 			this.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 			GameObject hex = (GameObject)Instantiate (Hex);
 			hex.transform.position = new Vector3 (0,-1f,0);
 
-            health = maxHealth;
+           // health = maxHealth;
         }
 
-        canJump = false;
+        onJumpableSurface = false;
 	}
 
     //Handles any collisions with the player. Mostly treasure and monster hexes.
@@ -138,7 +147,7 @@ public class PlayerMovement : MonoBehaviour {
         //Jump renabled when the player is touching the outer hex trigger.
         if (triggerGO.tag == "Ground")
         {
-            canJump = true;
+            onJumpableSurface = true;
         }
     }
 
@@ -148,7 +157,7 @@ public class PlayerMovement : MonoBehaviour {
 
     public override string ToString()
     {
-        return "Health: " + health + "\nScore: " + score;
+        return "Score: " + score;
     }
 }
 

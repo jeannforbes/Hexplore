@@ -4,7 +4,7 @@ using System.Collections;
 
 public class DisplayGUI : MonoBehaviour {
     private Rect textRect;
-    private string healthScore = "";
+    private string guiContent = "";
     private PlayerMovement playerMovement = null;
 
 	// Use this for initialization
@@ -17,13 +17,15 @@ public class DisplayGUI : MonoBehaviour {
 	void Update () {
        if(playerMovement != null)
         {
-            healthScore = playerMovement.ToString();
+            guiContent = playerMovement.ToString();
         }
     }
 
+   
     //OnGUI is called once per frame to display the GUI
     void OnGUI()
     {
-        GUI.TextArea(textRect, healthScore);
+        GUI.TextArea(textRect, guiContent);
     }
+
 }
