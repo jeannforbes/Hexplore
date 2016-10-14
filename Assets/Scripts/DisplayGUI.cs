@@ -1,30 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class DisplayGUI : MonoBehaviour {
     private Rect textRect;
     private string healthScore = "";
-    private PlayerMovement playerMovement;
-
-    public GameObject player;
-    
+    private PlayerMovement playerMovement = null;
 
 	// Use this for initialization
 	void Start () {
         textRect = new Rect(0.0f, 0.0f, 100.0f, 40.0f);
-        playerMovement = (PlayerMovement)player.GetComponent("PlayerMovement");
-	}
+        playerMovement = (PlayerMovement)(GameObject.FindWithTag("Player").GetComponent("PlayerMovement"));
+    }
 	
 	// Update is called once per frame
 	void Update () {
-	
-	}
+       if(playerMovement != null)
+        {
+            healthScore = playerMovement.ToString();
+        }
+    }
 
     //OnGUI is called once per frame to display the GUI
     void OnGUI()
     {
-        healthScore = "Health: " + playerMovement.Health + "\nScore : " + playerMovement.Score;
-
         GUI.TextArea(textRect, healthScore);
     }
 }
