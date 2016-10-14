@@ -2,7 +2,7 @@
 
 A 3D hex-based exploration game.
 
-[link](https://jeannforbes.github.io/Hexplore/ "Play it here!")
+[Play it here!](https://jeannforbes.github.io/Hexplore/)
 
 ## Coming Soon...
 * infinite terrain
