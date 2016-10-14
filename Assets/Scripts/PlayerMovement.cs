@@ -6,11 +6,11 @@ public class PlayerMovement : MonoBehaviour {
     //////////////////// Public Values ////////////////////
     public GameObject Hex;
     public float maxSpeed = 15.0f;
-    public int slideForce = 18;
-    public int jumpStrength = 75;
+    public int slideForce = 1200;
+    public int jumpStrength = 4000;
 
-   // public float gravityStrength = 10f;
-   // public Vector3 gravityDirection = Vector3.down;
+    public float gravityStrength = 500f;
+    public Vector3 gravityDirection = Vector3.down;
 
     /////////////////// Private Values ///////////////////
     //ability to jump is now controlled by a bool value.
@@ -22,6 +22,9 @@ public class PlayerMovement : MonoBehaviour {
 
     private Rigidbody rBody;
     private GameObject collidingGO = null;
+
+    private Vector3 rightVector;
+    private Vector3 frontVector;
 
 	private Color originalColor;
 
@@ -59,7 +62,7 @@ public class PlayerMovement : MonoBehaviour {
         //rBody.AddForce(gravityStrength * gravityDirection);
 
         //player controls
-        /*Old movement code, always aligned to normal gravity*/
+        /*Old movement code, always aligned to normal gravity
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
             rBody.AddForce(new Vector3(-slideForce, 0, 0) * Time.deltaTime);
 
@@ -75,7 +78,7 @@ public class PlayerMovement : MonoBehaviour {
         bool spacePressed = Input.GetKey(KeyCode.Space);
         if (spacePressed && onJumpableSurface && jumpReady)
         {
-            rBody.AddForce(Vector3.up * jumpStrength /** Time.deltaTime*/);
+            rBody.AddForce(Vector3.up * jumpStrength);
             jumpReady = false;
         }
         if (!spacePressed && !jumpReady)
@@ -83,31 +86,49 @@ public class PlayerMovement : MonoBehaviour {
             //print("Jump ready!");
             jumpReady = true;
         }
-        
+        */
 
-        /* New movement code, does not adjust correctly for gravity changes.
+        /* New movement code*/
+        rightVector = Vector3.Cross(gravityDirection, new Vector3(0,0,1));
+        if(rightVector.sqrMagnitude == 0)
+        {
+            rightVector = Vector3.Cross(gravityDirection, new Vector3(0, 1, 0));
+        }
+        frontVector = Vector3.Cross(gravityDirection, rightVector);
+        //print("Front: " + frontVector + ", Right: " + rightVector);
+
         if (Input.GetKey (KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         { 
-            rBody.AddForce(Quaternion.Euler(0f,0f,-90.0f) * gravityDirection * slideForce);
-            print(Quaternion.Euler(0f, 0f, -90.0f) * gravityDirection);
+            rBody.AddForce(rightVector * Time.deltaTime * slideForce);
+            //print(-1*rightVector*Time.deltaTime);
         }
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
-            rBody.AddForce(Quaternion.Euler(-90.0f, 0f, 0f) * gravityDirection * slideForce);
+            rBody.AddForce(-1*frontVector * Time.deltaTime * slideForce);
         }
         if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
-            rBody.AddForce(Quaternion.Euler(90.0f, 0f, 0f) * gravityDirection * slideForce);
+            rBody.AddForce(frontVector * Time.deltaTime * slideForce);
         }
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
-            rBody.AddForce(Quaternion.Euler(0f, 0f, 90.0f) * gravityDirection * slideForce);
+            rBody.AddForce(-1* rightVector * Time.deltaTime * slideForce);
         }
-        if (Input.GetKey(KeyCode.Space) && canJump)
+
+        bool spacePressed = Input.GetKey(KeyCode.Space);
+        if (spacePressed && onJumpableSurface && jumpReady)
         {
-            rBody.AddForce(-1* gravityDirection * jumpStrength);
-		}
-*/
+            rBody.AddForce(-1 * gravityDirection * jumpStrength);
+            jumpReady = false;
+        }
+        if (!spacePressed && !jumpReady)
+        {
+            //print("Jump ready!");
+            jumpReady = true;
+        }
+
+        rBody.AddForce(gravityDirection * gravityStrength * Time.deltaTime);
+
         rBody.velocity = Vector3.ClampMagnitude(rBody.velocity, maxSpeed);
 
 		//Check if the player is still alive & reset if they aren't
