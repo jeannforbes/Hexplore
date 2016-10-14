@@ -2,6 +2,8 @@
 
 A 3D hex-based exploration game.
 
+[link](https://jeannforbes.github.io/Hexplore/ "Play it here!")
+
 ## Coming Soon...
 * infinite terrain
 * weather
