@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+
 
 public class PlayerMovement : MonoBehaviour {
    /* public struct Deform
@@ -36,14 +36,15 @@ public class PlayerMovement : MonoBehaviour {
     private Vector3 frontVector;
 
 	private Color originalColor;
+    private const float MAX_MAG = 1.732050808f;
 
     //deformation handler
     private Vector3 collisionVector;
-    //private List<Deform> deformList;
-
     private GameObject deformObject;
-   // private Vector3 netDeform;
-   // private Deform tempDeform;
+    private Vector3 netImpulse;
+    private int numImpacts = 0;
+
+
 
     // Use this for initialization
     void Start () {
@@ -51,9 +52,8 @@ public class PlayerMovement : MonoBehaviour {
 		originalColor = GetComponent<Renderer>().material.color;
 
         //deform components
-        //****deformList = new List<Deform>();
         deformObject = new GameObject();
-       //****netDeform = new Vector3();
+        netImpulse = Vector3.zero;
 	}
 	
 	// Update is called once per frame
@@ -108,38 +108,29 @@ public class PlayerMovement : MonoBehaviour {
         }
 
         //deforming logic
-        /*netDeform *= 0;
-        int i = 0;
-
-        float avgDeform = 0;
-        while(i < deformList.Count)
+        
+        if (netImpulse.sqrMagnitude != 0 && numImpacts != 0)
         {
-            tempDeform = deformList[i];
-            tempDeform.deformTime -= Time.deltaTime;
-            if(tempDeform.deformTime <= 0)
-            {
-                deformList.RemoveAt(i);
-                continue;
-            }
+            netImpulse /= numImpacts;
 
-            netDeform +=  tempDeform.deformTime*tempDeform.deformDirection;
-            avgDeform += (500-tempDeform.deformTime);
+            collisionVector = Vector3.one;
+            collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
+            collisionVector.y = (Mathf.Abs(netImpulse.y) - 1000) / -1000;
+            collisionVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
 
-            i++;
-        }
- 
-        if (netDeform.sqrMagnitude != 0)
-        {
-            avgDeform /= deformList.Count;
-
-
-            deformObject.transform.forward = Vector3.Normalize(netDeform);
+            this.transform.localScale = collisionVector;
+            print("CollisionVector: " + collisionVector);
+           /* deformObject.transform.forward = Vector3.Normalize(collisionVector);
             
             this.transform.localScale = Vector3.one;
             this.transform.parent = deformObject.transform;
-            deformObject.transform.localScale = new Vector3(1, .5f, 1);
-            this.transform.parent = null;
-        }*/
+            deformObject.transform.localScale = new Vector3(1, collisionVector.magnitude/MAX_MAG, 1);
+            this.transform.parent = null;*/
+
+            netImpulse *= 0;
+            numImpacts = 0;
+        }
+
 
         onJumpableSurface = false;
 	}
@@ -152,15 +143,9 @@ public class PlayerMovement : MonoBehaviour {
 
         if (collisions.gameObject.tag == "hexagon")
         {
-            collisionVector = Vector3.one;
-            Vector3 netImpulse = collisions.impulse / Time.fixedDeltaTime;
-            collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
-            collisionVector.y = (Mathf.Abs(netImpulse.y)-1000)/-1000;
-            collisionVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
-            print("Collision: " + (collisions.impulse/Time.fixedDeltaTime));
-            
-            this.transform.localScale = collisionVector;
-            print("CollisionVector: " + collisionVector);
+            netImpulse += collisions.impulse / Time.fixedDeltaTime;
+            print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
+            numImpacts++;
 
             //deformList.Add(new Deform(Vector3.Normalize(collisionVector), 1000f));
         }
