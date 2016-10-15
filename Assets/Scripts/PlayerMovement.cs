@@ -4,7 +4,6 @@ using System.Collections;
 public class PlayerMovement : MonoBehaviour {
 
     //////////////////// Public Values ////////////////////
-    public GameObject Hex;
     public float maxSpeed = 15.0f;
     public int slideForce = 1200;
     public int jumpStrength = 4000;
@@ -16,8 +15,6 @@ public class PlayerMovement : MonoBehaviour {
     //ability to jump is now controlled by a bool value.
     private bool onJumpableSurface = true;
     private bool jumpReady = true;
-   // private float maxHealth = 10;
-    //private float health;
     private int score = 0;
 
     private Rigidbody rBody;
@@ -28,65 +25,14 @@ public class PlayerMovement : MonoBehaviour {
 
 	private Color originalColor;
 
-    //properties
-    /*
-    //gets the player's health
-    public float Health
-    {
-        get
-        {
-            return health;
-        }
-    }
-
-    //gets the player's score
-    public int Score
-    {
-        get
-        {
-            return score;
-        }
-    }
-    */
-
     // Use this for initialization
     void Start () {
         rBody = (Rigidbody)this.GetComponent("Rigidbody");
-        //health = maxHealth;
 		originalColor = GetComponent<Renderer>().material.color;
 	}
 	
 	// Update is called once per frame
 	void Update() {
-        //gravity
-        //rBody.AddForce(gravityStrength * gravityDirection);
-
-        //player controls
-        /*Old movement code, always aligned to normal gravity
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            rBody.AddForce(new Vector3(-slideForce, 0, 0) * Time.deltaTime);
-
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            rBody.AddForce(new Vector3(0, 0, slideForce) * Time.deltaTime);
-
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            rBody.AddForce(new Vector3(0, 0, -slideForce) * Time.deltaTime);
-
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            rBody.AddForce(new Vector3(slideForce, 0, 0) * Time.deltaTime);
-
-        bool spacePressed = Input.GetKey(KeyCode.Space);
-        if (spacePressed && onJumpableSurface && jumpReady)
-        {
-            rBody.AddForce(Vector3.up * jumpStrength);
-            jumpReady = false;
-        }
-        if (!spacePressed && !jumpReady)
-        {
-            //print("Jump ready!");
-            jumpReady = true;
-        }
-        */
 
         /* New movement code*/
         rightVector = Vector3.Cross(gravityDirection, new Vector3(0,0,1));
@@ -100,7 +46,6 @@ public class PlayerMovement : MonoBehaviour {
         if (Input.GetKey (KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         { 
             rBody.AddForce(rightVector * Time.deltaTime * slideForce);
-            //print(-1*rightVector*Time.deltaTime);
         }
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
@@ -123,7 +68,6 @@ public class PlayerMovement : MonoBehaviour {
         }
         if (!spacePressed && !jumpReady)
         {
-            //print("Jump ready!");
             jumpReady = true;
         }
 
@@ -132,14 +76,10 @@ public class PlayerMovement : MonoBehaviour {
         rBody.velocity = Vector3.ClampMagnitude(rBody.velocity, maxSpeed);
 
 		//Check if the player is still alive & reset if they aren't
-		if (this.transform.position.y < -15 /*|| health <= 0*/) {
-			this.transform.position = new Vector3(0,10,0);
+		if (this.transform.position.y < -15) {
+			this.transform.position = new Vector3(0,30,0);
 			this.transform.rotation = Quaternion.identity;
 			this.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
-			GameObject hex = (GameObject)Instantiate (Hex);
-			hex.transform.position = new Vector3 (0,-1f,0);
-
-           // health = maxHealth;
         }
 
         onJumpableSurface = false;
@@ -149,7 +89,6 @@ public class PlayerMovement : MonoBehaviour {
     void OnCollisionEnter(Collision collisions)
     {
         collidingGO = collisions.gameObject;
-        //print("Name: " + collidingGO.name);
 		if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
     }
 
