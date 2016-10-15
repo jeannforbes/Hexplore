@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-struct Grid{
+public struct Grid{
 	public float x, z;
 	public List<Hex> hexes;
 	public Grid(float x, float z){
@@ -12,7 +12,7 @@ struct Grid{
 	}
 }
 
-struct Hex{
+public struct Hex{
 	public Vector2 gridPos;
 	public GameObject go;
 	public Hex(GameObject go, Vector2 gridPos){
@@ -27,7 +27,7 @@ public class GridGenerator : MonoBehaviour {
 
 	private GameObject Player;
 	private GameObject hexGridGO;
-	private Grid grid;
+	public Grid grid;
 	private Hex hexGrass;
 
 	private float hexWidth;
@@ -46,6 +46,8 @@ public class GridGenerator : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		//See if we need to generate a hex
 		int x = (int)( (Player.transform.position.x / hexWidth) );
 		int z = (int)( (Player.transform.position.z / hexHeight) *1.5f);
 		bool needHex = true;
@@ -56,6 +58,7 @@ public class GridGenerator : MonoBehaviour {
 				makeHex (new Vector2(x+i, z+k));
 			}
 		}
+		makeVisible ();
 	}
 
 	void makeHex(Vector2 gridPos){
@@ -73,6 +76,21 @@ public class GridGenerator : MonoBehaviour {
 			grid.hexes.Add (hex);
 			hex.go.transform.position = worldPos;
 			hex.go.transform.parent = hexGridGO.transform;
+			hex.go.GetComponent<Renderer>().enabled = false;
+		}
+	}
+
+	void makeVisible(){
+		GameObject hex;
+		for (int i=0; i<grid.hexes.Count; i++) {
+			hex = grid.hexes[i].go;
+			if ( (Mathf.Sqrt (Mathf.Pow (hex.transform.position.x - Player.transform.position.x, 2f) 
+			                  + Mathf.Pow (hex.transform.position.z - Player.transform.position.z, 2f)) < 15f) && !hex.GetComponent<Renderer>().enabled) {
+				hex.GetComponent<Renderer> ().enabled = true;
+			}
+			if( hex.transform.position.y < (-hexHeight*2 *  Mathf.PerlinNoise (hex.transform.position.x, hex.transform.position.z)+10f) && hex.GetComponent<Renderer>().enabled){
+				hex.transform.Translate(0, 30 * Time.deltaTime,0);
+			}
 		}
 	}
 
