@@ -30,8 +30,12 @@ public class MudBehavior : MonoBehaviour {
 	}
 	
 	void OnTriggerStay(Collider other){
-		if (other.CompareTag ("Player"))
-			other.gameObject.GetComponent<Rigidbody> ().velocity /= slow;
+		if (other.CompareTag ("Player")){
+			if(slow > 0)
+				other.gameObject.GetComponent<Rigidbody> ().velocity /= slow;
+			else
+				other.gameObject.GetComponent<Rigidbody> ().velocity *= -slow;
+		}
 	}
 	
 	//creates a particle emitter at the gameobject's position
