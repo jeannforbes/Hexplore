@@ -4,32 +4,36 @@ using System.Collections.Generic;
 
 public struct Grid{
 	public float x, z;
-	public int obeliskCount;
 	public List<Hex> hexes;
 	public Grid(float x, float z){
 		this.x = x;
 		this.z = z;
 		hexes = new List<Hex>();
-		this.obeliskCount = 0;
 	}
 }
 
 public struct Hex{
-	public Vector2 gridPos;
-	public GameObject go;
+	public Vector2 gridPos; //position in grid coords
+	public GameObject go; //the hex's prefab
+	public GameObject decor; //the top asset's prefab
+	public bool canBounce;
 	public Hex(GameObject go, Vector2 gridPos){
 		this.gridPos = gridPos;
 		this.go = go;
+		this.decor = null;
+		this.canBounce = true;
 	}
 }
 
 public class GridGenerator : MonoBehaviour {
 
-	public GameObject grass, dirt, sand, water, obelisk;
+	public GameObject grass, mud, sand, water, cloud;
+	public GameObject tree0, tree1, tree2;
+	public Material grassTex0,  grassTex1,  grassTex2;
 
 	private GameObject Player;
 	private GameObject hexGridGO;
-	public Grid grid;
+	public Grid grid, gridClouds;
 	private Hex hexGrass;
 
 	private float hexWidth;
@@ -38,6 +42,8 @@ public class GridGenerator : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		Random.seed = ((int)System.DateTime.Now.Millisecond);
+
 		Player = GameObject.FindGameObjectWithTag ("Player");
 		hexGridGO = new GameObject("HexGrid");
 		grid = new Grid (0,0);
@@ -75,10 +81,46 @@ public class GridGenerator : MonoBehaviour {
 
 			Hex hex = new Hex (type, gridPos);
 			hex.go = (GameObject)Instantiate (type);
+			if(type == grass){
+				switch ((int)Random.Range (0,3))
+				{
+				case 1:
+					hex.go.GetComponent<Renderer>().material = grassTex0;
+					break;
+				case 2:
+					hex.go.GetComponent<Renderer>().material = grassTex1;
+					break;
+				default: 
+					break;
+				}
+				switch ((int)Random.Range (0,15))
+				{
+					case 1:
+						hex.decor = (GameObject)Instantiate (tree0);
+						break;
+					case 2:
+						hex.decor = (GameObject)Instantiate (tree1);
+						break;
+					case 3:
+						hex.decor = (GameObject)Instantiate (tree2);
+						break;
+					default: break;
+				}
+			}
+
 			grid.hexes.Add (hex);
 			hex.go.transform.position = worldPos;
 			hex.go.transform.parent = hexGridGO.transform;
 			hex.go.GetComponent<Renderer>().enabled = false;
+
+			//Hide top decor
+			if(hex.decor){
+				hex.decor.transform.position = new Vector3(worldPos.x, worldPos.y+5, worldPos.z);
+				hex.decor.transform.Rotate( Vector3.up * Random.Range (0,360));
+				hex.decor.transform.parent = hex.go.transform;
+				foreach( Renderer hd in hex.decor.GetComponentsInChildren<Renderer>())
+					hd.enabled = false;
+			}
 		}
 	}
 
@@ -87,8 +129,14 @@ public class GridGenerator : MonoBehaviour {
 		for (int i=0; i<grid.hexes.Count; i++) {
 			hex = grid.hexes[i].go;
 			if ( (Mathf.Sqrt (Mathf.Pow (hex.transform.position.x - Player.transform.position.x, 2f) 
-			                  + Mathf.Pow (hex.transform.position.z - Player.transform.position.z, 2f)) < 15f) && !hex.GetComponent<Renderer>().enabled) {
+			                  + Mathf.Pow (hex.transform.position.z - Player.transform.position.z, 2f)) < 20f) && !hex.GetComponent<Renderer>().enabled) {
 				hex.GetComponent<Renderer> ().enabled = true;
+
+				//Reveal top decor
+				if(grid.hexes[i].decor){
+					foreach( Renderer hd in grid.hexes[i].decor.GetComponentsInChildren<Renderer>())
+						hd.enabled = true;
+				}
 			}
 			if( hex.transform.position.y < (-hexHeight*2 *  Mathf.PerlinNoise (hex.transform.position.x, hex.transform.position.z)+10f) && hex.GetComponent<Renderer>().enabled){
 				hex.transform.Translate(0, 30 * Time.deltaTime,0);
@@ -127,12 +175,7 @@ public class GridGenerator : MonoBehaviour {
 			if (Random.Range (0, 10) < 5)
 				return sand;
 			else
-				return dirt;
-		} else if (Random.Range (0,10) < 2) {
-			if(grid.obeliskCount <= 3){
-				grid.obeliskCount++;
-				return obelisk;
-			}
+				return mud;
 		}
 		return grass;
 	}

@@ -3,34 +3,28 @@ using System.Collections;
 
 public class CameraMovement : MonoBehaviour {
 
-    
-	private Quaternion relativeRot;
-	private Vector3 relativePos, worldPos;
-    public Transform player = null;
-    public float camHeight = 20.0f;
-    private Transform cam = null;
+	public float camHeight = 20f, camDist = 20f;
+	public Vector3 currentRot = Vector3.down;
+
+    private GameObject Player = null;
 
     // Use this for initialization
     void Start () {
-        //relativeRot = this.transform.rotation;
-        //relativePos = this.transform.localPosition;   
 
-        //experimental changes - inspiration taken from http://answers.unity3d.com/questions/938894/camera-following-without-rotation.html
-        cam = transform;
-        
+		Player = GameObject.FindGameObjectWithTag ("Player");
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        //this.transform.rotation = relativeRot;
-        //this.transform.localPosition = relativePos;
-
         //experimental changes
-        Vector3 pos = player.transform.position;
+		Vector3 pos = Player.transform.position;
         pos.y += camHeight;
-        pos.z -= camHeight;
-        cam.position = pos;
+        pos.z -= camDist;
+        transform.position = new Vector3(0f, pos.y+camHeight, pos.z-camDist);
         
-
+		//Swap cameras based on player's current gravity
+		if (currentRot != Player.GetComponent<PlayerMovement> ().gravityDirection) {
+			
+		}
     }
 }
