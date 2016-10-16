@@ -1,7 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class PlayerMovement : MonoBehaviour {
+   /* public struct Deform
+    {
+        public Vector3 deformDirection;
+        public float deformTime;
+
+        public Deform(Vector3 direction,float time)
+        {
+            this.deformDirection = direction;
+            this.deformTime = time;
+        }
+    }*/
 
     //////////////////// Public Values ////////////////////
     public float maxSpeed = 15.0f;
@@ -24,11 +36,24 @@ public class PlayerMovement : MonoBehaviour {
     private Vector3 frontVector;
 
 	private Color originalColor;
+    private const float MAX_MAG = 1.732050808f;
+
+    //deformation handler
+    private Vector3 collisionVector;
+    private GameObject deformObject;
+    private Vector3 netImpulse;
+    private int numImpacts = 0;
+
+
 
     // Use this for initialization
     void Start () {
         rBody = (Rigidbody)this.GetComponent("Rigidbody");
 		originalColor = GetComponent<Renderer>().material.color;
+
+        //deform components
+        deformObject = new GameObject();
+        netImpulse = Vector3.zero;
 	}
 	
 	// Update is called once per frame
@@ -75,12 +100,50 @@ public class PlayerMovement : MonoBehaviour {
 
         rBody.velocity = Vector3.ClampMagnitude(rBody.velocity, maxSpeed);
 
-		//Check if the player is still alive & reset if they aren't
-		if (this.transform.position.y < -15) {
-			this.transform.position = new Vector3(0,30,0);
-			this.transform.rotation = Quaternion.identity;
-			this.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
+		//Check if the player is beneath the grid, and flip them!
+		if (this.transform.position.y < 0) {
+			//this.transform.position = new Vector3(0,30,0);
+			//this.transform.rotation = Quaternion.identity;
+			//this.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
+			gravityDirection = Vector3.up;
+		} else {
+			gravityDirection = Vector3.down;
+		}
+
+        //deforming logic
+        if (netImpulse.sqrMagnitude != 0 && numImpacts != 0)
+        {
+            netImpulse /= numImpacts;
+            netImpulse = transform.InverseTransformVector(netImpulse);
+            print("Impulse: " + netImpulse);
+
+            collisionVector = Vector3.one;
+            collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
+            collisionVector.y = (Mathf.Abs(netImpulse.y) - 1000) / -1000;
+            collisionVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
+
+            this.transform.localScale = collisionVector;
+            print("CollisionVector: " + collisionVector);
+            deformObject.transform.forward = Vector3.Normalize(collisionVector);
+
+            /*
+            this.transform.localScale = Vector3.one;
+            this.transform.parent = deformObject.transform;
+            deformObject.transform.localScale = new Vector3(1, collisionVector.magnitude/MAX_MAG, 1);
+            this.transform.parent = null;
+            */
+
+            netImpulse *= 0;
+            numImpacts = 0;
         }
+        else
+        {
+            float scaleX = Mathf.Clamp((transform.localScale.x) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            this.transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
+        }
+
 
         onJumpableSurface = false;
 	}
@@ -89,10 +152,19 @@ public class PlayerMovement : MonoBehaviour {
     void OnCollisionEnter(Collision collisions)
     {
         collidingGO = collisions.gameObject;
-		if (collidingGO.CompareTag ("Obelisk"))
-			collidingGO.GetComponent<Renderer> ().material = this.GetComponent<Renderer> ().material;
-		else if(collidingGO.GetComponent<Renderer>()) 
-			this.GetComponent<Renderer> ().material = collidingGO.GetComponent<Renderer> ().material;
+		//if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
+
+        if (collidingGO.CompareTag("hexagon") )
+        {
+            netImpulse += collisions.impulse / Time.fixedDeltaTime;
+            //print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
+            numImpacts++;
+
+            //deformList.Add(new Deform(Vector3.Normalize(collisionVector), 1000f));
+        }
+		// if(collidingGO.GetComponent<Renderer>()) 
+		//	this.GetComponent<Renderer> ().material = collidingGO.GetComponent<Renderer> ().material;
+
     }
 
 	void OnCollisionExit(Collision collisions){
@@ -100,7 +172,7 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider other){
-		if(other.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material = other.gameObject.GetComponent<Renderer> ().material;
+		//if(other.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material = other.gameObject.GetComponent<Renderer> ().material;
 	}
 
     //Checks if the player is touching a trigger.
@@ -122,5 +194,6 @@ public class PlayerMovement : MonoBehaviour {
     {
         return "Score: " + score;
     }
-}
 
+    
+}
