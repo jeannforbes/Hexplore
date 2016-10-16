@@ -4,11 +4,13 @@ using System.Collections.Generic;
 
 public struct Grid{
 	public float x, z;
+	public int obeliskCount;
 	public List<Hex> hexes;
 	public Grid(float x, float z){
 		this.x = x;
 		this.z = z;
 		hexes = new List<Hex>();
+		this.obeliskCount = 0;
 	}
 }
 
@@ -23,7 +25,7 @@ public struct Hex{
 
 public class GridGenerator : MonoBehaviour {
 
-	public GameObject grass, dirt, sand, water;
+	public GameObject grass, dirt, sand, water, obelisk;
 
 	private GameObject Player;
 	private GameObject hexGridGO;
@@ -122,8 +124,15 @@ public class GridGenerator : MonoBehaviour {
 		if (height < -10)
 			return water;
 		else if (height < -7) {
-			if(Random.Range (0,10) < 5) return sand;
-			else return dirt;
+			if (Random.Range (0, 10) < 5)
+				return sand;
+			else
+				return dirt;
+		} else if (Random.Range (0,10) < 2) {
+			if(grid.obeliskCount <= 3){
+				grid.obeliskCount++;
+				return obelisk;
+			}
 		}
 		return grass;
 	}

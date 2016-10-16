@@ -89,15 +89,18 @@ public class PlayerMovement : MonoBehaviour {
     void OnCollisionEnter(Collision collisions)
     {
         collidingGO = collisions.gameObject;
-		if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
+		if (collidingGO.CompareTag ("Obelisk"))
+			collidingGO.GetComponent<Renderer> ().material = this.GetComponent<Renderer> ().material;
+		else if(collidingGO.GetComponent<Renderer>()) 
+			this.GetComponent<Renderer> ().material = collidingGO.GetComponent<Renderer> ().material;
     }
 
 	void OnCollisionExit(Collision collisions){
-		this.GetComponent<Renderer> ().material.color = originalColor;
+		//this.GetComponent<Renderer> ().material.color = originalColor;
 	}
 
 	void OnTriggerEnter(Collider other){
-		if(other.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = other.gameObject.GetComponent<Renderer> ().material.color;
+		if(other.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material = other.gameObject.GetComponent<Renderer> ().material;
 	}
 
     //Checks if the player is touching a trigger.
@@ -112,7 +115,7 @@ public class PlayerMovement : MonoBehaviour {
     }
 
 	void OnTriggerExit(Collider other){
-		this.GetComponent<Renderer> ().material.color = originalColor;
+		//this.GetComponent<Renderer> ().material.color = originalColor;
 	}
 
     public override string ToString()
