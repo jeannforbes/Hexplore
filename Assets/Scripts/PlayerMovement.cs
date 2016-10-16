@@ -108,10 +108,11 @@ public class PlayerMovement : MonoBehaviour {
         }
 
         //deforming logic
-        
         if (netImpulse.sqrMagnitude != 0 && numImpacts != 0)
         {
             netImpulse /= numImpacts;
+            netImpulse = transform.InverseTransformVector(netImpulse);
+            print("Impulse: " + netImpulse);
 
             collisionVector = Vector3.one;
             collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
@@ -120,15 +121,24 @@ public class PlayerMovement : MonoBehaviour {
 
             this.transform.localScale = collisionVector;
             print("CollisionVector: " + collisionVector);
-           /* deformObject.transform.forward = Vector3.Normalize(collisionVector);
-            
+            deformObject.transform.forward = Vector3.Normalize(collisionVector);
+
+            /*
             this.transform.localScale = Vector3.one;
             this.transform.parent = deformObject.transform;
             deformObject.transform.localScale = new Vector3(1, collisionVector.magnitude/MAX_MAG, 1);
-            this.transform.parent = null;*/
+            this.transform.parent = null;
+            */
 
             netImpulse *= 0;
             numImpacts = 0;
+        }
+        else
+        {
+            float scaleX = Mathf.Clamp((transform.localScale.x) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            this.transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
         }
 
 
@@ -153,7 +163,7 @@ public class PlayerMovement : MonoBehaviour {
 
 	void OnCollisionExit(Collision collisions){
 		this.GetComponent<Renderer> ().material.color = originalColor;
-	}
+    }
 
 	void OnTriggerEnter(Collider other){
 		if(other.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = other.gameObject.GetComponent<Renderer> ().material.color;
