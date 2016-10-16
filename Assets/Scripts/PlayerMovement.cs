@@ -151,7 +151,7 @@ public class PlayerMovement : MonoBehaviour {
         collidingGO = collisions.gameObject;
 		if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
 
-        if (collisions.gameObject.tag == "hexagon")
+        if (collidingGO.CompareTag("hexagon") || collidingGO.CompareTag("Obelisk"))
         {
             netImpulse += collisions.impulse / Time.fixedDeltaTime;
             print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
