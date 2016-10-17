@@ -30,7 +30,7 @@ public class WaterBehavior : MonoBehaviour {
 	}
 
 	void OnTriggerStay(Collider other){
-		if(other.CompareTag("Player")) other.gameObject.GetComponent<Rigidbody> ().AddForce (Vector3.up * buoyancy * Time.deltaTime);
+		if(other.CompareTag("Player")) other.gameObject.GetComponent<Rigidbody> ().AddForce (Vector3.up * buoyancy * 1000 * Time.deltaTime);
 	}
 
 	//creates a particle emitter at the gameobject's position

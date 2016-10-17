@@ -20,7 +20,7 @@ public class TimeManager : MonoBehaviour {
 		fireflies = GameObject.FindGameObjectsWithTag("Fireflies");
 		isDay = true;
 		timeChangeCounter = 0;
-		hexes = GetComponent<GridGenerator> ().grid.hexes;
+		hexes = GetComponent<GridManager> ().grid.hexes;
 	}
 	
 	// Update is called once per frame
@@ -29,7 +29,7 @@ public class TimeManager : MonoBehaviour {
 		updateTime ();
 		Debug.Log (isDay);
 
-		hexes = GetComponent<GridGenerator> ().grid.hexes;
+		hexes = GetComponent<GridManager> ().grid.hexes;
 		if (!isDay && fireflies.Length < 5) {
 			GameObject hexGO = null;
 			while (hexGO == null || !hexGO.GetComponent<Renderer>().enabled)

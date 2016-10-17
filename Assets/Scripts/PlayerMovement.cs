@@ -34,8 +34,6 @@ public class PlayerMovement : MonoBehaviour {
 
     private Vector3 rightVector;
     private Vector3 frontVector;
-
-	private Color originalColor;
     private const float MAX_MAG = 1.732050808f;
 
     //deformation handler
@@ -49,7 +47,6 @@ public class PlayerMovement : MonoBehaviour {
     // Use this for initialization
     void Start () {
         rBody = (Rigidbody)this.GetComponent("Rigidbody");
-		originalColor = GetComponent<Renderer>().material.color;
 
         //deform components
         deformObject = new GameObject();
@@ -101,13 +98,13 @@ public class PlayerMovement : MonoBehaviour {
         rBody.velocity = Vector3.ClampMagnitude(rBody.velocity, maxSpeed);
 
 		//Check if the player is beneath the grid, and flip them!
-		if (this.transform.position.y < 0) {
-			//this.transform.position = new Vector3(0,30,0);
-			//this.transform.rotation = Quaternion.identity;
-			//this.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
-			gravityDirection = Vector3.up;
+		if (this.transform.position.y < -20) {
+			this.transform.position = new Vector3(0,30,0);
+			this.transform.rotation = Quaternion.identity;
+			this.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
+			//gravityDirection = Vector3.up;
 		} else {
-			gravityDirection = Vector3.down;
+			//gravityDirection = Vector3.down;
 		}
 
         //deforming logic
@@ -184,7 +181,7 @@ public class PlayerMovement : MonoBehaviour {
     void OnCollisionEnter(Collision collisions)
     {
         collidingGO = collisions.gameObject;//print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
-		if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
+		//if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
 
         if (collidingGO.CompareTag("hexagon") || collidingGO.CompareTag("Obelisk"))
         {

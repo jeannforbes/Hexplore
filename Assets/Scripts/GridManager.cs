@@ -15,17 +15,19 @@ public struct Grid{
 public struct Hex{
 	public Vector2 gridPos; //position in grid coords
 	public GameObject go; //the hex's prefab
-	public GameObject decor; //the top asset's prefab
+	public GameObject topDecor; //the top asset's prefab
+	public GameObject botDecor; //the bottom asset's prefab
 	public bool canBounce;
 	public Hex(GameObject go, Vector2 gridPos){
 		this.gridPos = gridPos;
 		this.go = go;
-		this.decor = null;
+		this.topDecor = null;
+		this.botDecor = null;
 		this.canBounce = true;
 	}
 }
 
-public class GridGenerator : MonoBehaviour {
+public class GridManager : MonoBehaviour {
 
 	public GameObject grass, mud, sand, water, cloud;
 	public GameObject tree0, tree1, tree2;
@@ -96,16 +98,29 @@ public class GridGenerator : MonoBehaviour {
 				switch ((int)Random.Range (0,15))
 				{
 					case 1:
-						hex.decor = (GameObject)Instantiate (tree0);
+						hex.topDecor = (GameObject)Instantiate (tree0);
 						break;
 					case 2:
-						hex.decor = (GameObject)Instantiate (tree1);
+						hex.topDecor = (GameObject)Instantiate (tree1);
 						break;
 					case 3:
-						hex.decor = (GameObject)Instantiate (tree2);
+						hex.topDecor = (GameObject)Instantiate (tree2);
 						break;
 					default: break;
 				}
+				//switch ((int)Random.Range (0,15))
+				//{
+				//	case 1:
+				//		hex.botDecor = (GameObject)Instantiate (tree0);
+				//		break;
+				//	case 2:
+				//		hex.botDecor = (GameObject)Instantiate (tree1);
+				//		break;
+				//	case 3:
+				//		hex.botDecor = (GameObject)Instantiate (tree2);
+				//		break;
+				//	default: break;
+				//}
 			}
 
 			grid.hexes.Add (hex);
@@ -113,12 +128,20 @@ public class GridGenerator : MonoBehaviour {
 			hex.go.transform.parent = hexGridGO.transform;
 			hex.go.GetComponent<Renderer>().enabled = false;
 
-			//Hide top decor
-			if(hex.decor){
-				hex.decor.transform.position = new Vector3(worldPos.x, worldPos.y+5, worldPos.z);
-				hex.decor.transform.Rotate( Vector3.up * Random.Range (0,360));
-				hex.decor.transform.parent = hex.go.transform;
-				foreach( Renderer hd in hex.decor.GetComponentsInChildren<Renderer>())
+			//Hide decor
+			if(hex.topDecor){
+				hex.topDecor.transform.position = new Vector3(worldPos.x, worldPos.y+5, worldPos.z);
+				hex.topDecor.transform.Rotate( Vector3.up * Random.Range (0,360));
+				hex.topDecor.transform.parent = hex.go.transform;
+				foreach( Renderer hd in hex.topDecor.GetComponentsInChildren<Renderer>())
+					hd.enabled = false;
+			}
+			if(hex.botDecor){
+				hex.botDecor.transform.position = new Vector3(worldPos.x, worldPos.y-5, worldPos.z);
+				hex.botDecor.transform.Rotate( Vector3.up * Random.Range (0,360));
+				hex.botDecor.transform.Rotate (new Vector3(0,0,180f));
+				hex.botDecor.transform.parent = hex.go.transform;
+				foreach( Renderer hd in hex.botDecor.GetComponentsInChildren<Renderer>())
 					hd.enabled = false;
 			}
 		}
@@ -132,9 +155,13 @@ public class GridGenerator : MonoBehaviour {
 			                  + Mathf.Pow (hex.transform.position.z - Player.transform.position.z, 2f)) < 20f) && !hex.GetComponent<Renderer>().enabled) {
 				hex.GetComponent<Renderer> ().enabled = true;
 
-				//Reveal top decor
-				if(grid.hexes[i].decor){
-					foreach( Renderer hd in grid.hexes[i].decor.GetComponentsInChildren<Renderer>())
+				//Reveal decor
+				if(grid.hexes[i].topDecor){
+					foreach( Renderer hd in grid.hexes[i].topDecor.GetComponentsInChildren<Renderer>())
+						hd.enabled = true;
+				}
+				if(grid.hexes[i].botDecor){
+					foreach( Renderer hd in grid.hexes[i].botDecor.GetComponentsInChildren<Renderer>())
 						hd.enabled = true;
 				}
 			}
@@ -169,15 +196,19 @@ public class GridGenerator : MonoBehaviour {
 	}
 
 	GameObject getType(float height){
-		if (height < -10)
-			return water;
-		else if (height < -7) {
-			if (Random.Range (0, 10) < 5)
-				return sand;
-			else
-				return mud;
+		if(Mathf.PerlinNoise (Time.timeSinceLevelLoad*0.1f , 1f) < 0.5f){
+			if (height < -10)
+				return water;
+			else if (height < -8) {
+				if (Random.Range (0, 10) < 5)
+					return sand;
+				else
+					return mud;
+			}
+			return grass;
+		} else{
+			return cloud;
 		}
-		return grass;
 	}
 
 	bool equalish(float n1, float n2, float margin){
