@@ -27,11 +27,14 @@ public struct Hex{
 	}
 }
 
+enum Biome{ normal, fall, winter };
+
 public class GridManager : MonoBehaviour {
 
-	public GameObject grass, mud, sand, water, cloud , decay;
-	public GameObject tree0, tree1, tree2;
-	public Material grassTex0,  grassTex1,  grassTex2;
+	public GameObject grass0, grass1, grass2, fallGrass0, fallGrass1, fallGrass2;
+	public GameObject mud, ice, snow, water;
+	public GameObject cloud , decay;
+	public GameObject tree0, tree1, tree2, fallTree0, fallTree1, fallTree2;
 
 	private GameObject Player;
 	public GameObject hexGridGO;
@@ -79,50 +82,74 @@ public class GridManager : MonoBehaviour {
 		}
 		if (needHex) {
 			Vector3 worldPos = calcWorldCoord(gridPos);
-			GameObject type = getType(worldPos.y);
 
-			Hex hex = new Hex (type, gridPos);
-			hex.go = (GameObject)Instantiate (type);
-			if(type == grass){
-				switch ((int)Random.Range (0,3))
-				{
-				case 1:
-					hex.go.GetComponent<Renderer>().material = grassTex0;
-					break;
-				case 2:
-					hex.go.GetComponent<Renderer>().material = grassTex1;
-					break;
-				default: 
-					break;
+			Biome hexBiome = getBiome(worldPos.y);
+			GameObject type = grass0;
+			Hex hex = new Hex();
+			if(hexBiome == Biome.normal){
+				if(worldPos.y < -9){
+					type = water;
+				} else if(worldPos.y < -7){
+					type = mud;
+				} else{
+					if( Random.Range (0,10) <= 3) type = grass1;
+					else if( Random.Range (0,10) <= 3) type = grass2;
 				}
-				switch ((int)Random.Range (0,15))
-				{
+				hex = new Hex (type, gridPos);
+				//If grass, choose top decoration
+				if(type == grass0 || type == grass1 || type == grass2){
+					switch ((int)Random.Range (0,15))
+					{
+						case 1:
+							hex.topDecor = (GameObject)Instantiate (tree0);
+							break;
+						case 2:
+							hex.topDecor = (GameObject)Instantiate (tree1);
+							break;
+						case 3:
+							hex.topDecor = (GameObject)Instantiate (tree2);
+							break;
+						default: break;
+					}
+				}
+			}
+			else if(hexBiome == Biome.fall){
+				if(worldPos.y < -10){
+					type = ice;
+				} else if(worldPos.y < -9){
+					type = mud;
+				} else{
+					if( Random.Range (0,10) <= 3) type = fallGrass0;
+					else if( Random.Range (0,10) <= 3) type = fallGrass1;
+					else type = fallGrass2;
+				}
+				hex = new Hex (type, gridPos);
+				//If grass, choose top decoration
+				if(type == fallGrass0 || type == fallGrass1 || type == fallGrass2){
+					switch ((int)Random.Range (0,15))
+					{
 					case 1:
-						hex.topDecor = (GameObject)Instantiate (tree0);
+						hex.topDecor = (GameObject)Instantiate (fallTree0);
 						break;
 					case 2:
-						hex.topDecor = (GameObject)Instantiate (tree1);
+						hex.topDecor = (GameObject)Instantiate (fallTree1);
 						break;
 					case 3:
-						hex.topDecor = (GameObject)Instantiate (tree2);
+						hex.topDecor = (GameObject)Instantiate (fallTree2);
 						break;
 					default: break;
+					}
 				}
-				//switch ((int)Random.Range (0,15))
-				//{
-				//	case 1:
-				//		hex.botDecor = (GameObject)Instantiate (tree0);
-				//		break;
-				//	case 2:
-				//		hex.botDecor = (GameObject)Instantiate (tree1);
-				//		break;
-				//	case 3:
-				//		hex.botDecor = (GameObject)Instantiate (tree2);
-				//		break;
-				//	default: break;
-				//}
+			} else if(hexBiome == Biome.winter){
+				if(worldPos.y < -10)
+					type = ice;
+				else
+					type = snow;
+				hex = new Hex (type, gridPos);
 			}
-
+			
+			hex.go = (GameObject)Instantiate (type);
+			
 			grid.hexes.Add (hex);
 			hex.go.transform.position = worldPos;
 			hex.go.transform.parent = hexGridGO.transform;
@@ -186,7 +213,7 @@ public class GridManager : MonoBehaviour {
 		float x =  offset + gridPos.x * hexWidth;
 		//Every new line is offset in z direction by 3/4 of the hexagon height
 		float z = gridPos.y * hexHeight * 0.75f;
-		float y = -hexHeight*2 *  Mathf.PerlinNoise (x, z);
+		float y = -hexHeight*2 *  Mathf.PerlinNoise (x,z);
 		return new Vector3(x, y, z);
 	}
 
@@ -195,8 +222,8 @@ public class GridManager : MonoBehaviour {
 	{
 		//renderer component attached to the Hex prefab is used to get the current width and height
 		//	plus some margin for aesthetics
-		hexWidth = grass.GetComponent<Renderer>().bounds.size.x + MARGIN;
-		hexHeight = grass.GetComponent<Renderer>().bounds.size.z + MARGIN;
+		hexWidth = grass0.GetComponent<Renderer>().bounds.size.x + MARGIN;
+		hexHeight = grass0.GetComponent<Renderer>().bounds.size.z + MARGIN;
 	}
 
 	void spreadDecay(){
@@ -210,20 +237,12 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	GameObject getType(float height){
-		if(Mathf.PerlinNoise (Time.timeSinceLevelLoad*0.1f , 1f) < 0.5f){
-			if (height < -10)
-				return water;
-			else if (height < -8) {
-				if (Random.Range (0, 10) < 5)
-					return sand;
-				else
-					return mud;
-			}
-			return grass;
-		} else{
-			return cloud;
-		}
+	Biome getBiome(float height){
+		if(Mathf.PerlinNoise (Time.timeSinceLevelLoad*0.1f , 1f) < 0.5f)
+			return Biome.normal;
+		else if( Mathf.PerlinNoise (Time.timeSinceLevelLoad*0.1f , 1f) < 0.6f)
+			return Biome.fall;
+		return Biome.winter;
 	}
 
 	public static bool equalish(float n1, float n2, float margin){
