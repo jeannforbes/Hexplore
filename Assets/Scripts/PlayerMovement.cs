@@ -57,8 +57,8 @@ public class PlayerMovement : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update() {
-
-        /* New movement code*/
+		
+		/* Movement code (gravity based)
         rightVector = Vector3.Cross(gravityDirection, new Vector3(0,0,1));
         if(rightVector.sqrMagnitude == 0)
         {
@@ -66,6 +66,16 @@ public class PlayerMovement : MonoBehaviour {
         }
         frontVector = Vector3.Cross(gravityDirection, rightVector);
         //print("Front: " + frontVector + ", Right: " + rightVector);
+        */
+		
+		/*Movement code (camera based)*/
+		if (Camera.current != null)
+		{
+			frontVector = Camera.current.transform.forward;
+			frontVector.y = 0;
+			print("camera front: " + frontVector);
+			rightVector = Vector3.Cross(frontVector, Vector3.up);
+		}
 
         if (Input.GetKey (KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         { 
@@ -73,11 +83,11 @@ public class PlayerMovement : MonoBehaviour {
         }
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
-            rBody.AddForce(-1*frontVector * Time.deltaTime * slideForce);
+            rBody.AddForce(frontVector * Time.deltaTime * slideForce);
         }
         if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
-            rBody.AddForce(frontVector * Time.deltaTime * slideForce);
+            rBody.AddForce(-1*frontVector * Time.deltaTime * slideForce);
         }
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
@@ -149,10 +159,7 @@ public class PlayerMovement : MonoBehaviour {
             netImpulse = transform.InverseTransformVector(netImpulse);
             //print("Impulse: " + netImpulse);
 
-            collisionVector = Vector3.one;
-            collisionVector.x = 1 - ( (Mathf.Abs(netImpulse.x) - 1000) / 1000 );
-            collisionVector.y = 1 - ( (Mathf.Abs(netImpulse.y) - 1000) / 1000 );
-            collisionVector.z = 1 - ( (Mathf.Abs(netImpulse.z) - 1000) / 1000 );
+            collisionVector = createCollisionVector(netImpulse);
 
             this.transform.localScale = collisionVector * originalScale;
             //print("CollisionVector: " + collisionVector);
@@ -225,5 +232,20 @@ public class PlayerMovement : MonoBehaviour {
         return "Score: " + score;
     }
 
-    
+	private Vector3 createCollisionVector(Vector3 impact)
+	{
+		Vector3 tempVector = Vector3.one;
+		tempVector.x = (Mathf.Abs(impact.x) - 1000) / -1000;
+		tempVector.y = (Mathf.Abs(netImpulse.y) - 1000) / -1000;
+		tempVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
+		for(int i = 0; i < 3; i++)
+		{
+			tempVector[i] = (Mathf.Abs(impact[i]) - 1000) / -1000;
+			if(tempVector[i] < 0.1f)
+			{
+				tempVector[i] = 0.1f;
+			}
+		}
+		return tempVector;
+	}
 }
