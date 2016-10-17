@@ -29,12 +29,12 @@ public struct Hex{
 
 public class GridManager : MonoBehaviour {
 
-	public GameObject grass, mud, sand, water, cloud;
+	public GameObject grass, mud, sand, water, cloud , decay;
 	public GameObject tree0, tree1, tree2;
 	public Material grassTex0,  grassTex1,  grassTex2;
 
 	private GameObject Player;
-	private GameObject hexGridGO;
+	public GameObject hexGridGO;
 	public Grid grid, gridClouds;
 	private Hex hexGrass;
 
@@ -145,12 +145,16 @@ public class GridManager : MonoBehaviour {
 					hd.enabled = false;
 			}
 		}
+
+		//Spread the infection!
+		//spreadDecay ();
 	}
 
 	void makeVisible(){
 		GameObject hex;
 		for (int i=0; i<grid.hexes.Count; i++) {
 			hex = grid.hexes[i].go;
+			if(!hex) return;
 			if ( (Mathf.Sqrt (Mathf.Pow (hex.transform.position.x - Player.transform.position.x, 2f) 
 			                  + Mathf.Pow (hex.transform.position.z - Player.transform.position.z, 2f)) < 20f) && !hex.GetComponent<Renderer>().enabled) {
 				hex.GetComponent<Renderer> ().enabled = true;
@@ -172,7 +176,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	//method used to convert hex grid coordinates to game world coordinates
-	private Vector3 calcWorldCoord(Vector2 gridPos)
+	public Vector3 calcWorldCoord(Vector2 gridPos)
 	{
 		//Every second row is offset by half of the tile width
 		float offset = 0;
@@ -195,6 +199,17 @@ public class GridManager : MonoBehaviour {
 		hexHeight = grass.GetComponent<Renderer>().bounds.size.z + MARGIN;
 	}
 
+	void spreadDecay(){
+		if (Random.Range (0, 1000) < 2) {
+			Hex decayHex = grid.hexes [Random.Range (0, grid.hexes.Count)];
+			if(decayHex.go){
+				GameObject oldGO = decayHex.go;
+				decayHex.go = (GameObject)Instantiate (decay, decayHex.go.transform.position, decayHex.go.transform.rotation);
+				Destroy (oldGO);
+			}
+		}
+	}
+
 	GameObject getType(float height){
 		if(Mathf.PerlinNoise (Time.timeSinceLevelLoad*0.1f , 1f) < 0.5f){
 			if (height < -10)
@@ -211,7 +226,7 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	bool equalish(float n1, float n2, float margin){
+	public static bool equalish(float n1, float n2, float margin){
 		if (n1 > (n2 - margin) && n1 < (n2 + margin) )
 			return true;
 		return false;

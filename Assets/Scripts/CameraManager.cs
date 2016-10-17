@@ -26,7 +26,6 @@ public class CameraManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		Debug.Log (cameras);
 		if (cameras.Count > 0) {
 			updateCam ();
 			if (camDir != Player.GetComponent<PlayerMovement> ().gravityDirection)

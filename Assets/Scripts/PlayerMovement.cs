@@ -41,6 +41,7 @@ public class PlayerMovement : MonoBehaviour {
     private GameObject deformObject;
     private Vector3 netImpulse;
     private int numImpacts = 0;
+	private float originalScale;
 
 
 
@@ -51,6 +52,7 @@ public class PlayerMovement : MonoBehaviour {
         //deform components
         deformObject = new GameObject();
         netImpulse = Vector3.zero;
+		originalScale = transform.localScale.magnitude;
 	}
 	
 	// Update is called once per frame
@@ -112,7 +114,7 @@ public class PlayerMovement : MonoBehaviour {
         {
             netImpulse /= numImpacts;
             netImpulse = transform.InverseTransformVector(netImpulse);
-            print("Impulse: " + netImpulse);
+            //print("Impulse: " + netImpulse);
 
             collisionVector = Vector3.one;
             collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
@@ -120,7 +122,7 @@ public class PlayerMovement : MonoBehaviour {
             collisionVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
 
             this.transform.localScale = collisionVector;
-            print("CollisionVector: " + collisionVector);
+            //print("CollisionVector: " + collisionVector);
             deformObject.transform.forward = Vector3.Normalize(collisionVector);
 
             /*
@@ -135,9 +137,9 @@ public class PlayerMovement : MonoBehaviour {
         }
         else
         {
-            float scaleX = Mathf.Clamp((transform.localScale.x) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
-            float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
-            float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            float scaleX = Mathf.Clamp((transform.localScale.x) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
+			float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
+			float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
             this.transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
         }
         //deforming logic
@@ -145,15 +147,15 @@ public class PlayerMovement : MonoBehaviour {
         {
             netImpulse /= numImpacts;
             netImpulse = transform.InverseTransformVector(netImpulse);
-            print("Impulse: " + netImpulse);
+            //print("Impulse: " + netImpulse);
 
             collisionVector = Vector3.one;
             collisionVector.x = 1 - ( (Mathf.Abs(netImpulse.x) - 1000) / 1000 );
             collisionVector.y = 1 - ( (Mathf.Abs(netImpulse.y) - 1000) / 1000 );
             collisionVector.z = 1 - ( (Mathf.Abs(netImpulse.z) - 1000) / 1000 );
 
-            this.transform.localScale = collisionVector;
-            print("CollisionVector: " + collisionVector);
+            this.transform.localScale = collisionVector * originalScale;
+            //print("CollisionVector: " + collisionVector);
             deformObject.transform.forward = Vector3.Normalize(collisionVector);
 
             /*
@@ -186,7 +188,7 @@ public class PlayerMovement : MonoBehaviour {
         if (collidingGO.CompareTag("hexagon") || collidingGO.CompareTag("Obelisk"))
         {
             netImpulse += collisions.impulse / Time.fixedDeltaTime;
-            print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
+            //print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
             numImpacts++;
 
             //deformList.Add(new Deform(Vector3.Normalize(collisionVector), 1000f));
