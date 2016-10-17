@@ -148,9 +148,9 @@ public class PlayerMovement : MonoBehaviour {
             print("Impulse: " + netImpulse);
 
             collisionVector = Vector3.one;
-            collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
-            collisionVector.y = (Mathf.Abs(netImpulse.y) - 1000) / -1000;
-            collisionVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
+            collisionVector.x = 1 - ( (Mathf.Abs(netImpulse.x) - 1000) / 1000 );
+            collisionVector.y = 1 - ( (Mathf.Abs(netImpulse.y) - 1000) / 1000 );
+            collisionVector.z = 1 - ( (Mathf.Abs(netImpulse.z) - 1000) / 1000 );
 
             this.transform.localScale = collisionVector;
             print("CollisionVector: " + collisionVector);
