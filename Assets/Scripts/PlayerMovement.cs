@@ -34,7 +34,6 @@ public class PlayerMovement : MonoBehaviour {
 
     private Vector3 rightVector;
     private Vector3 frontVector;
-    private const float MAX_MAG = 1.732050808f;
 
     //deformation handler
     private Vector3 collisionVector;
@@ -52,7 +51,9 @@ public class PlayerMovement : MonoBehaviour {
         //deform components
         deformObject = new GameObject();
         netImpulse = Vector3.zero;
-		originalScale = transform.localScale.magnitude;
+        //assuming we always have a cube, the magnitude is equal to one of the axises times square-root of three
+        originalScale = transform.localScale.magnitude / Mathf.Sqrt(3);
+        print("Scale: " + originalScale);
 	}
 	
 	// Update is called once per frame
@@ -73,7 +74,7 @@ public class PlayerMovement : MonoBehaviour {
 		{
 			frontVector = Camera.current.transform.forward;
 			frontVector.y = 0;
-			print("camera front: " + frontVector);
+			//print("camera front: " + frontVector);
 			rightVector = Vector3.Cross(frontVector, Vector3.up);
 		}
 
@@ -118,21 +119,16 @@ public class PlayerMovement : MonoBehaviour {
 		} else {
 			//gravityDirection = Vector3.down;
 		}
-
+        
         //deforming logic
         if (netImpulse.sqrMagnitude != 0 && numImpacts != 0)
         {
             netImpulse /= numImpacts;
             netImpulse = transform.InverseTransformVector(netImpulse);
-            //print("Impulse: " + netImpulse);
 
-            collisionVector = Vector3.one;
-            collisionVector.x = (Mathf.Abs(netImpulse.x) - 1000) / -1000;
-            collisionVector.y = (Mathf.Abs(netImpulse.y) - 1000) / -1000;
-            collisionVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
+            collisionVector = createCollisionVector(netImpulse);
 
-            this.transform.localScale = collisionVector;
-            //print("CollisionVector: " + collisionVector);
+            this.transform.localScale = collisionVector * originalScale;
             deformObject.transform.forward = Vector3.Normalize(collisionVector);
 
             /*
@@ -148,38 +144,8 @@ public class PlayerMovement : MonoBehaviour {
         else
         {
             float scaleX = Mathf.Clamp((transform.localScale.x) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
-			float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
-			float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
-            this.transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
-        }
-        //deforming logic
-        if (netImpulse.sqrMagnitude != 0 && numImpacts != 0)
-        {
-            netImpulse /= numImpacts;
-            netImpulse = transform.InverseTransformVector(netImpulse);
-            //print("Impulse: " + netImpulse);
-
-            collisionVector = createCollisionVector(netImpulse);
-
-            this.transform.localScale = collisionVector * originalScale;
-            //print("CollisionVector: " + collisionVector);
-            deformObject.transform.forward = Vector3.Normalize(collisionVector);
-
-            /*
-            this.transform.localScale = Vector3.one;
-            this.transform.parent = deformObject.transform;
-            deformObject.transform.localScale = new Vector3(1, collisionVector.magnitude/MAX_MAG, 1);
-            this.transform.parent = null;
-            */
-
-            netImpulse *= 0;
-            numImpacts = 0;
-        }
-        else
-        {
-            float scaleX = Mathf.Clamp((transform.localScale.x) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
-            float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
-            float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, 1f);
+            float scaleY = Mathf.Clamp((transform.localScale.y) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
+            float scaleZ = Mathf.Clamp((transform.localScale.z) * (1 + 0.45f * Time.deltaTime), 0f, originalScale);
             this.transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
         }
 
@@ -189,16 +155,13 @@ public class PlayerMovement : MonoBehaviour {
     //Handles any collisions with the player. Mostly treasure and monster hexes.
     void OnCollisionEnter(Collision collisions)
     {
-        collidingGO = collisions.gameObject;//print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
-		//if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
-
+        collidingGO = collisions.gameObject;
+        //if(collisions.gameObject.GetComponent<Renderer>()) this.GetComponent<Renderer> ().material.color = collisions.gameObject.GetComponent<Renderer> ().material.color;
+        
         if (collidingGO.CompareTag("hexagon") || collidingGO.CompareTag("Obelisk"))
         {
             netImpulse += collisions.impulse / Time.fixedDeltaTime;
-            //print("Collision: " + (collisions.impulse / Time.fixedDeltaTime));
             numImpacts++;
-
-            //deformList.Add(new Deform(Vector3.Normalize(collisionVector), 1000f));
         }
 		// if(collidingGO.GetComponent<Renderer>()) 
 		//	this.GetComponent<Renderer> ().material = collidingGO.GetComponent<Renderer> ().material;
@@ -234,13 +197,10 @@ public class PlayerMovement : MonoBehaviour {
 
 	private Vector3 createCollisionVector(Vector3 impact)
 	{
-		Vector3 tempVector = Vector3.one;
-		tempVector.x = (Mathf.Abs(impact.x) - 1000) / -1000;
-		tempVector.y = (Mathf.Abs(netImpulse.y) - 1000) / -1000;
-		tempVector.z = (Mathf.Abs(netImpulse.z) - 1000) / -1000;
+        Vector3 tempVector = Vector3.one;
 		for(int i = 0; i < 3; i++)
 		{
-			tempVector[i] = (Mathf.Abs(impact[i]) - 1000) / -1000;
+            tempVector[i] = (Mathf.Abs(impact[i]) - 1000) / -1000;
 			if(tempVector[i] < 0.1f)
 			{
 				tempVector[i] = 0.1f;
