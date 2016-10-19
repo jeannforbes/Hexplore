@@ -53,7 +53,7 @@ public class PlayerMovement : MonoBehaviour {
         netImpulse = Vector3.zero;
         //assuming we always have a cube, the magnitude is equal to one of the axises times square-root of three
         originalScale = transform.localScale.magnitude / Mathf.Sqrt(3);
-        print("Scale: " + originalScale);
+        //print("Scale: " + originalScale);
 	}
 	
 	// Update is called once per frame
