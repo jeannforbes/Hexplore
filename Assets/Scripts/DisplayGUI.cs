@@ -15,17 +15,17 @@ public class DisplayGUI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-       if(playerMovement != null)
+       /*if(playerMovement != null)
         {
             guiContent = playerMovement.ToString();
-        }
+        }*/
     }
 
-   
+   /*
     //OnGUI is called once per frame to display the GUI
     void OnGUI()
     {
         GUI.TextArea(textRect, guiContent);
     }
-
+    */
 }

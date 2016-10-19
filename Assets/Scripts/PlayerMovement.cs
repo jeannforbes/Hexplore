@@ -27,7 +27,7 @@ public class PlayerMovement : MonoBehaviour {
     //ability to jump is now controlled by a bool value.
     private bool onJumpableSurface = true;
     private bool jumpReady = true;
-    private int score = 0;
+    //private int score = 0;
 
     private Rigidbody rBody;
     private GameObject collidingGO = null;
@@ -190,10 +190,11 @@ public class PlayerMovement : MonoBehaviour {
 		//this.GetComponent<Renderer> ().material.color = originalColor;
 	}
 
-    public override string ToString()
+   /*( public override string ToString()
     {
         return "Score: " + score;
     }
+    */
 
 	private Vector3 createCollisionVector(Vector3 impact)
 	{
