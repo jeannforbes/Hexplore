@@ -7,12 +7,14 @@ public class WeatherScript : MonoBehaviour {
         clear,
         overcast,
         light_snow,
-        heavy_snow
+        heavy_snow,
+        light_rain,
+        heavy_rain
     }
 
     public Material clearSky, overcastSky;
 
-    public GameObject lightSnow, heavySnow;
+    public GameObject lightSnow, heavySnow,lightRain,heavyRain;
 
     private float timeSinceLastUpdate = 0;
     private float timeBetweenUpdates = 10;
@@ -37,6 +39,8 @@ public class WeatherScript : MonoBehaviour {
         weatherRef = new Dictionary<global::WeatherScript.weatherType, GameObject>();
         weatherRef[weatherType.light_snow] = lightSnow;
         weatherRef[weatherType.heavy_snow] = heavySnow;
+        weatherRef[weatherType.light_rain] = lightRain;
+        weatherRef[weatherType.heavy_rain] = heavyRain;
     }
 	
 	// Update is called once per frame
@@ -71,9 +75,13 @@ public class WeatherScript : MonoBehaviour {
                         {
                             setWeather(weatherType.clear);
                         }
-                        else
+                        else if(nextRandom <= 0.7f)
                         {
                             setWeather(weatherType.light_snow);
+                        }
+                        else
+                        {
+                            setWeather(weatherType.light_rain);
                         }
                         break;
                     case weatherType.light_snow:
@@ -88,6 +96,19 @@ public class WeatherScript : MonoBehaviour {
                         break;
                     case weatherType.heavy_snow:
                         setWeather(weatherType.light_snow);
+                        break;
+                    case weatherType.light_rain:
+                        if (nextRandom <= 0.7f)
+                        {
+                            setWeather(weatherType.overcast);
+                        }
+                        else
+                        {
+                            setWeather(weatherType.heavy_rain);
+                        }
+                        break;
+                    case weatherType.heavy_rain:
+                        setWeather(weatherType.light_rain);
                         break;
                     default:
                         setWeather(weatherType.clear);
