@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour {
     private GameObject collidingGO = null;
 
     private Vector3 rightVector;
-    private Vector3 frontVector;
+	private Vector3 frontVector;
 
     //deformation handler
     private Vector3 collisionVector;
