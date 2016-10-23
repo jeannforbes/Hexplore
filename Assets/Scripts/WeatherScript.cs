@@ -26,14 +26,20 @@ public class WeatherScript : MonoBehaviour {
 
     private GameObject player;
     private Vector3 weatherVector;
+    private float initHeight;
     private Dictionary<weatherType, GameObject> weatherRef;
     private GameObject precipGO;
+
+    private List<GameObject> deletionList;
 
     // Use this for initialization
     void Start() {
         //skybox = RenderSettings.skybox;
 
+        initHeight = transform.position.y;
+
         player = GameObject.FindGameObjectWithTag("Player");
+        deletionList = new List<GameObject>();
         Random.seed = (int)Time.time;
 
         weatherRef = new Dictionary<global::WeatherScript.weatherType, GameObject>();
@@ -51,7 +57,7 @@ public class WeatherScript : MonoBehaviour {
         }
 
         weatherVector = player.transform.position;
-        weatherVector.y = 30f;
+        weatherVector.y = initHeight;
         this.gameObject.transform.position = weatherVector;
 
         timeSinceLastUpdate += Time.deltaTime;
@@ -60,6 +66,12 @@ public class WeatherScript : MonoBehaviour {
         {
             //print("Type: " + weather);
             timeSinceLastUpdate = 0;
+
+            while(deletionList.Count > 0)
+            {
+                GameObject.Destroy(deletionList[0]);
+                deletionList.RemoveAt(0);
+            }
 
             if(Random.Range(0,1.0f) > 0.7)
             {
@@ -127,7 +139,8 @@ public class WeatherScript : MonoBehaviour {
         //children destruction method from http://answers.unity3d.com/questions/611850/destroy-all-children-of-object.html
         foreach (Transform child in transform)
         {
-            GameObject.Destroy(child.gameObject);
+            //GameObject.Destroy(child.gameObject);
+            deletionList.Add(child.gameObject);
         }
 
         if(weather != weatherType.clear && weather != weatherType.overcast)
